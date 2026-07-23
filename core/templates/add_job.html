@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h2>📋 Post a New Job</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Job Title:</label>
+        <input type="text" name="title" placeholder="e.g. AI Developer" required>
+        <label>Job Description & Requirements:</label>
+        <textarea name="description" rows="8" placeholder="List the requirements..." required></textarea>
+        <button type="submit" class="btn btn-success">Post Job</button>
+    </form>
+</div>
+{% endblock %}
