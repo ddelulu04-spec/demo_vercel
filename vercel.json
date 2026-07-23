@@ -1,0 +1,17 @@
+{
+  "builds": [
+    {
+      "src": "intellihire_web/wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": ["core/templates/**", "core/static/**", "media/**"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "intellihire_web/wsgi.py"
+    }
+  ]
+}
