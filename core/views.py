@@ -1,5 +1,3 @@
-
-
 # Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -7,6 +5,7 @@ from .models import Job, Candidate
 from .ai_engine import read_cv, analyze_cv
 from dotenv import load_dotenv
 load_dotenv()
+
 
 def dashboard(request):
     jobs = Job.objects.all()
@@ -22,6 +21,7 @@ def dashboard(request):
     }
     return render(request, 'dashboard.html', context)
 
+
 def add_job(request):
     if request.method == 'POST':
         title = request.POST.get('title')
@@ -30,6 +30,7 @@ def add_job(request):
         messages.success(request, 'Job added successfully!')
         return redirect('dashboard')
     return render(request, 'add_job.html')
+
 
 def upload_cv(request):
     jobs = Job.objects.all()
@@ -45,7 +46,9 @@ def upload_cv(request):
             cv_file=cv_file,
             job=job
         )
-        cv_text = read_cv(candidate.cv_file.path)
+        candidate.cv_file.open('rb')
+        cv_text = read_cv(candidate.cv_file)
+        candidate.cv_file.close()
         result = analyze_cv(cv_text, job.description)
         candidate.match_score = result['score']
         candidate.status = result['recommendation']
@@ -57,6 +60,8 @@ def upload_cv(request):
         )
         return redirect('dashboard')
     return render(request, 'upload_cv.html', {'jobs': jobs})
+
+
 def update_status(request, pk):
     candidate = get_object_or_404(Candidate, pk=pk)
     if request.method == 'POST':
@@ -65,6 +70,7 @@ def update_status(request, pk):
         candidate.save()
         messages.success(request, f'{candidate.name} status updated to {status}!')
     return redirect('dashboard')
+
 
 def candidate_detail(request, pk):
     candidate = get_object_or_404(Candidate, pk=pk)

@@ -4,6 +4,7 @@ from langchain_core.output_parsers import StrOutputParser
 import pdfplumber
 import os
 
+
 def get_llm():
     return ChatGroq(
         model="openai/gpt-oss-120b",
@@ -11,13 +12,15 @@ def get_llm():
         temperature=0
     )
 
-def read_cv(file_path: str) -> str:
-    """Read text from PDF CV."""
+
+def read_cv(file_obj) -> str:
+    """Read text from PDF CV. Accepts a file-like object or path."""
     text = ""
-    with pdfplumber.open(file_path) as pdf:
+    with pdfplumber.open(file_obj) as pdf:
         for page in pdf.pages:
             text += page.extract_text() or ""
     return text
+
 
 def analyze_cv(cv_text: str, job_description: str) -> dict:
     """Analyze CV against job description."""
@@ -60,13 +63,3 @@ def analyze_cv(cv_text: str, job_description: str) -> dict:
         if "Score:" in line:
             try:
                 score = int(line.split(":")[1].strip().split("/")[0])
-            except:
-                score = 0
-        if "Recommendation:" in line:
-            recommendation = line.split(":")[1].strip()
-
-    return {
-        "summary": extracted,
-        "score": score,
-        "recommendation": recommendation
-    }
