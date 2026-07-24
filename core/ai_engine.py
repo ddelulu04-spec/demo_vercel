@@ -27,23 +27,13 @@ def analyze_cv(cv_text: str, job_description: str) -> dict:
     llm = get_llm()
     parser = StrOutputParser()
 
-    # Extract info
     extract_prompt = ChatPromptTemplate.from_messages([
-        ("system", """Extract key info from CV.
-         Return ONLY in this format:
-         Skills: [comma separated]
-         Experience: [years and role]
-         Summary: [2 sentences]"""),
+        ("system", "Extract key info from CV. Return ONLY in this format:\nSkills: [comma separated]\nExperience: [years and role]\nSummary: [2 sentences]"),
         ("human", "CV:\n{cv}")
     ])
 
-    # Score candidate
     score_prompt = ChatPromptTemplate.from_messages([
-        ("system", """Score this candidate 0-100 for the job.
-         Return ONLY in this format:
-         Score: [number]/100
-         Recommendation: [Shortlist/Reject/Consider]
-         Reason: [one line]"""),
+        ("system", "Score this candidate 0-100 for the job. Return ONLY in this format:\nScore: [number]/100\nRecommendation: [Shortlist/Reject/Consider]\nReason: [one line]"),
         ("human", "Job:\n{job}\n\nCV:\n{cv}")
     ])
 
@@ -51,15 +41,22 @@ def analyze_cv(cv_text: str, job_description: str) -> dict:
     score_chain = score_prompt | llm | parser
 
     extracted = extract_chain.invoke({"cv": cv_text})
-    scored = score_chain.invoke({
-        "job": job_description,
-        "cv": cv_text
-    })
+    scored = score_chain.invoke({"job": job_description, "cv": cv_text})
 
-    # Parse score
     score = 0
     recommendation = "Consider"
+
     for line in scored.split("\n"):
         if "Score:" in line:
             try:
                 score = int(line.split(":")[1].strip().split("/")[0])
+            except Exception:
+                score = 0
+        if "Recommendation:" in line:
+            recommendation = line.split(":")[1].strip()
+
+    return {
+        "summary": extracted,
+        "score": score,
+        "recommendation": recommendation
+    }
